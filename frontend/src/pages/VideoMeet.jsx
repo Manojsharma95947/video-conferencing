@@ -34,8 +34,7 @@ export default function VideoMeetComponent() {
 
   let [audioAvailable, setAudioAvailable] = useState(true);
 
-  let [video, setVideo] = useState([]);
-
+  let [video, setVideo] = useState();
   let [audio, setAudio] = useState();
 
   let [screen, setScreen] = useState();
@@ -104,11 +103,6 @@ export default function VideoMeetComponent() {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    console.log("HELLO");
-    getPermissions();
-  });
 
   useEffect(() => {
     getPermissions();
@@ -443,12 +437,54 @@ export default function VideoMeetComponent() {
   };
 
   let handleVideo = () => {
-    setVideo(!video);
+    const newVideoState = !video;
+    setVideo(newVideoState);
+    try {
+      const tracks = window.localStream?.getVideoTracks() || [];
+      if (tracks.length > 0) {
+        tracks.forEach((t) => (t.enabled = newVideoState));
+      } else if (newVideoState) {
+        // if enabling and no video track exists yet, request camera and attach it
+        navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then((stream) => {
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+              window.localStream.addTrack(track);
+              if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
+            }
+          })
+          .catch((e) => console.log(e));
+      }
+  
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   let handleAudio = () => {
-    setAudio(!audio);
-    // getUserMedia();
+    const newAudioState = !audio;
+    setAudio(newAudioState);
+    try {
+      const tracks = window.localStream?.getAudioTracks() || [];
+      if (tracks.length > 0) {
+        tracks.forEach((t) => (t.enabled = newAudioState));
+      } else if (newAudioState) {
+        
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => {
+            const track = stream.getAudioTracks()[0];
+            if (track) {
+              window.localStream.addTrack(track);
+              if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
+            }
+          })
+          .catch((e) => console.log(e));
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   let handleEndCall = () => {
@@ -495,7 +531,7 @@ export default function VideoMeetComponent() {
     socketRef.current.emit("chat-message", message, username);
     setMessage("");
 
-    // this.setState({ message: "", sender: username })
+    
   };
 
   let connect = () => {
@@ -504,23 +540,23 @@ export default function VideoMeetComponent() {
   };
 
   return (
-    <div>
+    <div >
       {askForUsername === true ? (
         <div>
-          <h2>Enter your Lobby</h2>
-          <TextField
+          <h2 >Enter your Lobby</h2>
+          <TextField style={{margin:"10px 10px 20px 0px"}}
             id="outlined-basic"
             label="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             variant="outlined"
           />
-          <Button variant="contained" onClick={connect}>
+          <Button variant="contained" onClick={connect} style={{marginTop:"20px"}}>
             Connect
           </Button>
 
           <div>
-            <video ref={localVideoref} autoPlay muted></video>
+            <video ref={localVideoref} autoPlay muted style={{height:"70vh",left:"0"}}></video>
           </div>
         </div>
       ) : (
@@ -546,8 +582,8 @@ export default function VideoMeetComponent() {
                   )}
                 </div>
 
-                <div className={styles.chattingArea}>
-                  <TextField
+                <div className={styles.chattingArea} >
+                  <TextField 
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     id="outlined-basic"
