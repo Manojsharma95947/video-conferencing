@@ -34,7 +34,7 @@ export default function VideoMeetComponent() {
 
   let [audioAvailable, setAudioAvailable] = useState(true);
 
-  let [video, setVideo] = useState();
+  let [video, setVideo] = useState([]);
   let [audio, setAudio] = useState();
 
   let [screen, setScreen] = useState();
@@ -437,55 +437,64 @@ export default function VideoMeetComponent() {
   };
 
   let handleVideo = () => {
-    const newVideoState = !video;
-    setVideo(newVideoState);
-    try {
-      const tracks = window.localStream?.getVideoTracks() || [];
-      if (tracks.length > 0) {
-        tracks.forEach((t) => (t.enabled = newVideoState));
-      } else if (newVideoState) {
-        // if enabling and no video track exists yet, request camera and attach it
-        navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then((stream) => {
-            const track = stream.getVideoTracks()[0];
-            if (track) {
-              window.localStream.addTrack(track);
-              if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
-            }
-          })
-          .catch((e) => console.log(e));
-      }
-  
-    } catch (e) {
-      console.log(e);
-    }
+    setVideo(!video);
   };
 
   let handleAudio = () => {
-    const newAudioState = !audio;
-    setAudio(newAudioState);
-    try {
-      const tracks = window.localStream?.getAudioTracks() || [];
-      if (tracks.length > 0) {
-        tracks.forEach((t) => (t.enabled = newAudioState));
-      } else if (newAudioState) {
-        
-        navigator.mediaDevices
-          .getUserMedia({ audio: true })
-          .then((stream) => {
-            const track = stream.getAudioTracks()[0];
-            if (track) {
-              window.localStream.addTrack(track);
-              if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
-            }
-          })
-          .catch((e) => console.log(e));
-      }
-    } catch (e) {
-      console.log(e);
-    }
+    setAudio(!audio);
+    // getUserMedia();
   };
+
+  // let handleVideo = () => {
+  //   const newVideoState = !video;
+  //   setVideo(newVideoState);
+  //   try {
+  //     const tracks = window.localStream?.getVideoTracks() || [];
+  //     if (tracks.length > 0) {
+  //       tracks.forEach((t) => (t.enabled = newVideoState));
+  //     } else if (newVideoState) {
+  //       // if enabling and no video track exists yet, request camera and attach it
+  //       navigator.mediaDevices
+  //         .getUserMedia({ video: true })
+  //         .then((stream) => {
+  //           const track = stream.getVideoTracks()[0];
+  //           if (track) {
+  //             window.localStream.addTrack(track);
+  //             if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
+  //           }
+  //         })
+  //         .catch((e) => console.log(e));
+  //     }
+  
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+
+  // let handleAudio = () => {
+  //   const newAudioState = !audio;
+  //   setAudio(newAudioState);
+  //   try {
+  //     const tracks = window.localStream?.getAudioTracks() || [];
+  //     if (tracks.length > 0) {
+  //       tracks.forEach((t) => (t.enabled = newAudioState));
+  //     } else if (newAudioState) {
+        
+  //       navigator.mediaDevices
+  //         .getUserMedia({ audio: true })
+  //         .then((stream) => {
+  //           const track = stream.getAudioTracks()[0];
+  //           if (track) {
+  //             window.localStream.addTrack(track);
+  //             if (localVideoref.current) localVideoref.current.srcObject = window.localStream;
+  //           }
+  //         })
+  //         .catch((e) => console.log(e));
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   let handleEndCall = () => {
     try {
