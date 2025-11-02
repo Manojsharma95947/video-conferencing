@@ -282,12 +282,11 @@ useEffect(() => {
 
     if (fromId !== socketIdRef.current) {
       if (signal.sdp) {
-        connections[fromId]
-          .setRemoteDescription(new RTCSessionDescription(signal.sdp))
-          .then(() => {
-            if (
-              signal.sdp.type === "offer" 
-            ) {
+        const sdp = new RTCSessionDescription(signal.sdp);
+        if (signal.sdp.type === 'offer') {
+          connections[fromId]
+            .setRemoteDescription(sdp)
+            .then(() => {
               connections[fromId]
                 .createAnswer()
                 .then((description) => {
@@ -305,9 +304,13 @@ useEffect(() => {
                     .catch((e) => console.log(e));
                 })
                 .catch((e) => console.log(e));
-            }
-          })
-          .catch((e) => console.log(e));
+            })
+            .catch((e) => console.log(e));
+        } else if (signal.sdp.type === 'answer') {
+          connections[fromId]
+            .setRemoteDescription(sdp)
+            .catch((e) => console.log(e));
+        }
       }
 
       if (signal.ice) {
